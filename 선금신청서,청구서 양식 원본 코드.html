@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>출발전 제출 서류 포털</title>
+    
+    <!-- 카카오톡/문자 링크 공유 시 표시될 썸네일 (Open Graph) -->
+    <meta property="og:title" content="출발전 제출 서류 포털">
+    <meta property="og:description" content="발주처(학교/기관) 전용 안전 행정 서류 검증 시스템">
+    <!-- 요청하신 최종 썸네일 이미지 반영 완료 -->
+    <meta property="og:image" content="https://blogger.googleusercontent.com/img/a/AVvXsEhPxG_ONo2BdFAGDNnn-pHIGJTrAq374YbqgwTTlyIZTP22kOWTDD_AyjKDNFPhsHg5t1Iq6zV0dL_NZIj4o97Kd0eWJYCv-NHhtIqme-Mp3htGhAdkqVv5NRU3Jc9TbdbvvVKrPslObA1oNABpgl12QtGwirC2QM5lcPCVoWm8pIbeKuZBbeDHAvpbKEQ">
+    <meta property="og:type" content="website">
+
+    <!-- Google Analytics 4 (투어메이커 기본 GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JLH9GD9SVR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JLH9GD9SVR');
+    </script>
+    
+    <!-- Tailwind CSS & Phosphor Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: "Pretendard", 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f1f5f9; }
+        
+        /* B2B 스타일 호버 효과 */
+        .table-row-hover:hover { background-color: #f8fafc; }
+        
+        /* 왼쪽 관리자 패널 슬라이드 애니메이션 */
+        #admin-sidebar { transition: transform 0.3s ease-in-out; }
+        .sidebar-open { transform: translateX(0) !important; }
+        
+        /* 프린트 최적화 */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .shadow-sm, .shadow-md { box-shadow: none !important; }
+            .border { border: 1px solid #e2e8f0 !important; }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col overflow-x-hidden relative">
+
+    <!-- 🔒 보안 잠금 화면 -->
+    <div id="lock-screen" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-[100] hidden flex-col items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full mx-4 text-center transform transition-all border border-slate-200">
+            <img src="https://blogger.googleusercontent.com/img/a/AVvXsEitI-Z-hD82keOJ1AqHw-VTZjpw2U-O5UjtV9h3zblyG0wjsVfBWe9X9o0Q_Spctrt7krkd9qXO0xKTmGJLw4gyMZrRqpshKMFttnyx6OcC8-IGz3XLUZpGQOnRqVdol8jz5HuoDLqsEifnVRhcjUJHm13Sz8JrX9aPswMNUwZPvGtJEnQjhc2PiXlo-B8" alt="투어메이커 로고" class="h-10 mx-auto mb-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">보안 문서함 접속</h2>
+            <p class="text-sm text-slate-500 mb-6">안내받으신 접근 비밀번호<br><span class="font-semibold text-blue-600">(행사 출발일자 6자리)</span>를 입력해 주세요.</p>
+            
+            <input type="password" id="pwd-input" class="w-full text-center tracking-[0.5em] text-xl px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none mb-4" placeholder="••••••" maxlength="6" onkeypress="if(event.key === 'Enter') checkPassword()">
+            <p id="pwd-error" class="text-rose-500 text-sm font-semibold hidden mb-4">비밀번호가 일치하지 않습니다.</p>
+            
+            <button onclick="checkPassword()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-lg transition-colors shadow-md">
+                인증 및 문서 열람
+            </button>
+            <div class="mt-6 flex items-center justify-center gap-1 text-xs text-slate-400">
+                <i class="ph ph-shield-check"></i> TOURMAKER Secure System
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚙️ 왼쪽 관리자 패널 (Admin Sidebar: ?admin=true 일때만 활성화) -->
+    <div id="admin-sidebar" class="fixed top-0 left-0 w-80 h-full bg-white shadow-2xl z-50 transform -translate-x-full border-r border-slate-200 flex flex-col no-print">
+        <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+            <h2 class="font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-gear text-xl text-blue-600"></i> 관리자 설정 패널
+            </h2>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-5 flex-grow overflow-y-auto">
+            <!-- 1. 학교명 설정 -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">1. 발주처(학교명) 설정</label>
+                <input type="text" id="admin-school-name" placeholder="예: 남평초등학교" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 text-sm" oninput="updatePreviewText()">
+                <p class="text-[11px] text-blue-600 mt-1 font-bold">※ 입력하신 이름으로 PDF 폴더 경로가 매칭됩니다.</p>
+            </div>
+
+            <!-- 2. 프로그램명 설정 -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">2. 프로그램명 설정</label>
+                <input type="text" id="admin-program-name" placeholder="예: 국외현장체험학습" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 text-sm" oninput="updatePreviewText()">
+            </div>
+
+            <!-- 3. 출발일자 설정 -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">3. 행사 출발일자</label>
+                <input type="date" id="admin-departure-date" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 text-sm text-slate-600" onchange="autoGeneratePassword()">
+                <p class="text-xs text-slate-500 mt-1">선택 시 하단에 비밀번호가 자동 생성됩니다.</p>
+            </div>
+
+            <!-- 4. 비밀번호 설정 -->
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-slate-700 mb-2">4. 접속 비밀번호</label>
+                <input type="text" id="admin-password" placeholder="예: 260512 (빈칸 시 암호 없음)" class="w-full px-3 py-2 border border-blue-200 bg-blue-50 rounded-md focus:outline-none focus:border-blue-500 text-sm font-semibold tracking-wider">
+            </div>
+
+            <!-- 5. 파일 업로드 가이드 -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <label class="block text-sm font-bold text-slate-700 mb-2">5. 원본 PDF 업데이트 (필독)</label>
+                <p class="text-xs text-slate-600 mb-3 leading-relaxed">GitHub의 'files' 폴더 안에 <strong>[학교명]으로 폴더를 만들어</strong> 병합된 4개의 서류를 올려주세요.</p>
+                
+                <button onclick="simulateUpload()" class="w-full flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-bold py-2 rounded-md cursor-pointer transition-colors shadow-sm">
+                    <i class="ph ph-info text-lg text-blue-500"></i> 업로드 방법 확인하기
+                </button>
+            </div>
+            
+            <hr class="border-slate-200 mb-6">
+
+            <!-- 6. 링크 생성 (단축 링크 자동 변환) -->
+            <div>
+                <button id="generateBtn" onclick="generateLink()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
+                    <i class="ph ph-link text-lg"></i> 단축 보안링크 생성 및 복사
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-slate-100 text-xs text-slate-500 text-center border-t border-slate-200 font-semibold">
+            Tourmaker Document Portal Auto-Generator
+        </div>
+    </div>
+
+    <!-- Top Navigation (B2B 스타일) -->
+    <nav class="bg-white text-slate-800 shadow-sm border-b border-slate-200 no-print sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-4">
+                    <!-- Secret Admin Button -->
+                    <button id="secret-admin-btn" onclick="toggleSidebar()" class="hidden text-slate-500 hover:text-blue-600 mr-2 items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-md text-sm font-bold transition-colors border border-slate-200">
+                        <i class="ph ph-gear text-lg"></i> 관리자
+                    </button>
+                    <!-- 투어메이커 로고 -->
+                    <img src="https://blogger.googleusercontent.com/img/a/AVvXsEitI-Z-hD82keOJ1AqHw-VTZjpw2U-O5UjtV9h3zblyG0wjsVfBWe9X9o0Q_Spctrt7krkd9qXO0xKTmGJLw4gyMZrRqpshKMFttnyx6OcC8-IGz3XLUZpGQOnRqVdol8jz5HuoDLqsEifnVRhcjUJHm13Sz8JrX9aPswMNUwZPvGtJEnQjhc2PiXlo-B8" alt="투어메이커 로고" class="h-8 mix-blend-multiply hidden sm:block">
+                    <span class="font-bold tracking-wider text-sm sm:border-l border-slate-300 sm:pl-4 text-slate-400">B2B DOCUMENT PORTAL</span>
+                </div>
+                <div class="hidden md:flex text-xs text-slate-500 font-semibold items-center gap-1.5">
+                    <i class="ph ph-shield-check text-blue-600 text-lg align-middle relative -top-0.5"></i> 행정 서류 검증 시스템
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-sm text-slate-400 mb-1 no-print">
+                    <ol class="flex items-center space-x-2">
+                        <li>투어메이커 행정시스템</li>
+                        <li><i class="ph ph-caret-right text-xs"></i></li>
+                        <li>행정서류함</li>
+                        <li><i class="ph ph-caret-right text-xs"></i></li>
+                        <li class="font-bold text-slate-700">학교별 프로젝트</li>
+                    </ol>
+                </nav>
+                <div class="flex flex-wrap items-center gap-3 mt-1">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                        [<span class="school-name-display text-blue-700">남평초등학교</span>] <span class="program-name-display text-slate-800">국외현장체험학습</span>
+                    </h1>
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold no-print border border-emerald-200 shadow-sm">
+                        서류제출 완료
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 no-print mt-2 sm:mt-0">
+                <button onclick="window.print()" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm">
+                    <i class="ph ph-printer text-lg"></i> 목차 인쇄
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content (문서 목록) -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Summary Widgets (대표님이 선택하신 깔끔한 B2B 디자인 유지) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 no-print">
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg"><i class="ph ph-file-text text-2xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold mb-0.5">제출 카테고리</p>
+                    <p class="text-lg font-bold text-slate-800 tracking-tight">4 건</p>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="ph ph-calendar-check text-2xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold mb-0.5">최종 업데이트</p>
+                    <p class="text-sm font-bold text-slate-800 tracking-tight">사전 서류 등록완료</p>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><i class="ph ph-shield-check text-2xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold mb-0.5">보안 상태</p>
+                    <p class="text-sm font-bold text-slate-800 tracking-tight" id="status-security">위변조 검증 완료</p>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-orange-50 text-orange-600 rounded-lg"><i class="ph ph-headset text-2xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-500 font-semibold mb-0.5">담당 부서</p>
+                    <p class="text-sm font-bold text-slate-800 tracking-tight">투어메이커 행정팀</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Title -->
+        <div class="mb-6 flex flex-col gap-1">
+            <h2 class="text-xl font-bold text-slate-800 border-l-4 border-blue-600 pl-3">사전 제출 구비서류 목록</h2>
+            <p class="text-sm text-slate-500 pl-4 no-print mt-1">목록에서 <span class="font-semibold text-slate-700">열람/다운로드</span> 버튼을 클릭하여 원본 PDF 문서를 확인하실 수 있습니다.</p>
+        </div>
+
+        <!-- 병합된 4개의 파일 시스템 구조 -->
+        <div class="space-y-6">
+            
+            <!-- Category 01: 숙박 -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden break-inside-avoid">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="font-bold text-blue-800 flex items-center gap-2 text-base">
+                        <i class="ph ph-buildings text-indigo-500 text-xl"></i> 01. 숙박 관련 서류 일체
+                    </h3>
+                </div>
+                <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 table-row-hover transition-colors">
+                    <div class="flex items-start sm:items-center gap-4">
+                        <i class="ph ph-file-pdf text-rose-500 text-3xl"></i>
+                        <div>
+                            <p class="text-base font-bold text-slate-800 mb-1">이용 예정 숙박시설 안전 및 인허가 서류 일체</p>
+                            <p class="text-sm text-slate-500">예약확인서, 사업자/영업신고증, 소방/위생점검 및 영업배상책임보험 등</p>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="#" data-file="01_hotel.pdf" target="_blank" class="dynamic-doc-link no-print bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 px-4 py-2.5 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                            <i class="ph ph-eye text-lg text-slate-400"></i> 열람/다운로드
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 02: 차량 -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden break-inside-avoid">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="font-bold text-teal-800 flex items-center gap-2 text-base">
+                        <i class="ph ph-bus text-teal-500 text-xl"></i> 02. 차량 관련 서류 일체
+                    </h3>
+                </div>
+                <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 table-row-hover transition-colors">
+                    <div class="flex items-start sm:items-center gap-4">
+                        <i class="ph ph-file-pdf text-rose-500 text-3xl"></i>
+                        <div>
+                            <p class="text-base font-bold text-slate-800 mb-1">운행 차량회사 인허가, 보험 및 자격 서류 일체</p>
+                            <p class="text-sm text-slate-500">운송사업허가증, 차량등록증, 종합보험증권, 운전자 적성정밀검사 결과 등</p>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="#" data-file="02_bus.pdf" target="_blank" class="dynamic-doc-link no-print bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 px-4 py-2.5 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                            <i class="ph ph-eye text-lg text-slate-400"></i> 열람/다운로드
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 03: 식사 -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden break-inside-avoid">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="font-bold text-orange-800 flex items-center gap-2 text-base">
+                        <i class="ph ph-fork-knife text-orange-500 text-xl"></i> 03. 식사 관련 서류 일체
+                    </h3>
+                </div>
+                <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 table-row-hover transition-colors">
+                    <div class="flex items-start sm:items-center gap-4">
+                        <i class="ph ph-file-pdf text-rose-500 text-3xl"></i>
+                        <div>
+                            <p class="text-base font-bold text-slate-800 mb-1">식사 일정 및 관련 증빙 서류 일체</p>
+                            <p class="text-sm text-slate-500">전 일정 식단 정보, 식당별 영업/집단급식소 설치신고증, 배상책임보험 등</p>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="#" data-file="03_meal.pdf" target="_blank" class="dynamic-doc-link no-print bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 px-4 py-2.5 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                            <i class="ph ph-eye text-lg text-slate-400"></i> 열람/다운로드
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 04: 기타 -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden break-inside-avoid">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="font-bold text-blue-800 flex items-center gap-2 text-base">
+                        <i class="ph ph-shield-check text-blue-500 text-xl"></i> 04. 기타 (안전 및 보험 서류 일체)
+                    </h3>
+                </div>
+                <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 table-row-hover transition-colors">
+                    <div class="flex items-start sm:items-center gap-4">
+                        <i class="ph ph-file-pdf text-rose-500 text-3xl"></i>
+                        <div>
+                            <p class="text-base font-bold text-slate-800 mb-1">인솔자(안전요원) 신원확인 및 여행자보험 서류 일체</p>
+                            <p class="text-sm text-slate-500">안전요원 성범죄 등 전력 조회 동의서 및 단체 여행자보험 가입증명원</p>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="#" data-file="04_others.pdf" target="_blank" class="dynamic-doc-link no-print bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 px-4 py-2.5 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                            <i class="ph ph-eye text-lg text-slate-400"></i> 열람/다운로드
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- End of Categories -->
+
+    </main>
+
+    <!-- Admin Footer (투어메이커 규격) -->
+    <footer class="bg-white border-t border-slate-200 mt-auto no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-slate-500 text-xs text-center md:text-left leading-relaxed">
+                <p>본 페이지에 등록된 문서는 발주처(학교/기관)의 행정 검토용으로만 제공되며 무단 배포를 금합니다.</p>
+                <p class="mt-1">Copyright © <span class="font-bold text-slate-700">TOURMAKER INC.</span> All rights reserved.</p>
+            </div>
+            <a href="http://tourmaker.kr" target="_blank" class="shrink-0 bg-slate-800 border border-slate-800 text-slate-50 hover:bg-slate-900 px-6 py-3 rounded-md text-sm font-bold transition-colors flex items-center gap-2 shadow-sm">
+                투어메이커 홈페이지 <i class="ph ph-arrow-square-out text-lg"></i>
+            </a>
+        </div>
+    </footer>
+
+    <!-- Toast UI for Messages -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3.5 rounded-lg shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-[110] flex items-center gap-3">
+        <i class="ph ph-check-circle text-emerald-400 text-xl"></i>
+        <span id="toast-msg" class="font-semibold text-sm">복사되었습니다.</span>
+    </div>
+
+    <!-- 스크립트: 보안 토큰 기반 단축 링크 라우팅 -->
+    <script>
+        let currentSchool = '남평초등학교';
+        let currentProgram = '국외현장체험학습';
+        let encodedPassword = null;
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 💡 Secret Admin Check: URL에 ?admin=true 가 있어야만 관리자 버튼 활성화
+            if(urlParams.get('admin') === 'true') {
+                document.getElementById('secret-admin-btn').classList.remove('hidden');
+                document.getElementById('secret-admin-btn').classList.add('flex');
+            }
+
+            // 💡 학교명/비밀번호 파라미터 적용
+            if(urlParams.has('school')) {
+                currentSchool = urlParams.get('school');
+                document.getElementById('admin-school-name').value = currentSchool;
+            }
+            if(urlParams.has('program')) {
+                currentProgram = urlParams.get('program');
+                document.getElementById('admin-program-name').value = currentProgram;
+            }
+
+            updatePreviewText();
+
+            // 보안 잠금 처리
+            if(urlParams.has('pwd')) {
+                encodedPassword = urlParams.get('pwd');
+                document.getElementById('lock-screen').classList.remove('hidden');
+                document.getElementById('lock-screen').classList.add('flex');
+                document.getElementById('status-security').innerText = "보안 접속 대기";
+            } else {
+                document.getElementById('status-security').innerText = "공개 열람 (비밀번호 미설정)";
+            }
+        };
+
+        // UI 업데이트 및 동적 PDF 경로 연결
+        function updatePreviewText() {
+            const inputSchool = document.getElementById('admin-school-name').value || '남평초등학교';
+            const inputProgram = document.getElementById('admin-program-name').value || '국외현장체험학습';
+            
+            document.querySelectorAll('.school-name-display').forEach(el => el.innerText = inputSchool);
+            document.querySelectorAll('.program-name-display').forEach(el => el.innerText = inputProgram);
+            
+            // 핵심 로직: ./files/[학교명]/[파일이름]
+            const safeSchoolName = inputSchool.trim();
+            document.querySelectorAll('.dynamic-doc-link').forEach(link => {
+                const fileName = link.getAttribute('data-file');
+                link.href = `./files/${safeSchoolName}/${fileName}`;
+            });
+        }
+
+        function autoGeneratePassword() {
+            const dateVal = document.getElementById('admin-departure-date').value;
+            if (dateVal) {
+                const yy = dateVal.substring(2, 4);
+                const mm = dateVal.substring(5, 7);
+                const dd = dateVal.substring(8, 10);
+                document.getElementById('admin-password').value = yy + mm + dd;
+            }
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('pwd-input').value;
+            const error = document.getElementById('pwd-error');
+            if(btoa(input) === encodedPassword) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('lock-screen').classList.remove('flex');
+                document.getElementById('status-security').innerText = "위변조 검증 완료";
+            } else {
+                error.classList.remove('hidden');
+                document.getElementById('pwd-input').value = '';
+                document.getElementById('pwd-input').focus();
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('admin-sidebar').classList.toggle('sidebar-open');
+        }
+
+        function simulateUpload() {
+            alert("[안전한 데이터 보존을 위한 업로드 가이드]\n\n1. 컴퓨터에 [해당 학교명] 폴더를 만듭니다.\n2. 병합된 4개의 파일(01_hotel.pdf 등)을 넣습니다.\n3. GitHub 저장소의 'files' 폴더 내부에 이 학교 폴더를 통째로 업로드하세요.\n\n※ 학교명 입력 시 이 폴더명과 동일하게 입력하셔야 서류가 열립니다.");
+        }
+
+        // 💡 피싱 오해 방지! 자동 단축 링크 생성 로직 (is.gd JSONP 활용)
+        function generateLink() {
+            const school = document.getElementById('admin-school-name').value || '남평초등학교';
+            const program = document.getElementById('admin-program-name').value || '국외현장체험학습';
+            const pwd = document.getElementById('admin-password').value;
+            const btn = document.getElementById('generateBtn');
+            
+            // 로딩 상태 표시
+            btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> 단축 링크 생성 중...`;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            let url = new URL(window.location.href.split('?')[0]); 
+            url.searchParams.set('school', school.trim());
+            url.searchParams.set('program', program.trim());
+            if(pwd.trim() !== '') {
+                url.searchParams.set('pwd', btoa(pwd.trim()));
+            }
+
+            const longUrl = url.toString();
+
+            // is.gd를 통한 링크 자동 단축 요청
+            const script = document.createElement('script');
+            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+            
+            // 3.5초 내에 API 응답이 없으면 깃허브 원본 링크로 복사하는 안전장치
+            const fallbackTimer = setTimeout(() => {
+                finishCopy(longUrl, school, false);
+                cleanup();
+            }, 3500);
+
+            window[callbackName] = function(data) {
+                clearTimeout(fallbackTimer);
+                if(data && data.shorturl) {
+                    finishCopy(data.shorturl, school, true); // 성공 시 깔끔한 단축 링크 (예: is.gd/xxxx)
+                } else {
+                    finishCopy(longUrl, school, false); // 실패 시 원본 링크
+                }
+                cleanup();
+            };
+
+            function cleanup() {
+                delete window[callbackName];
+                if(script.parentNode) document.body.removeChild(script);
+                btn.innerHTML = `<i class="ph ph-link text-lg"></i> 단축 보안링크 생성 및 복사`;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }
+
+            script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
+            document.body.appendChild(script);
+        }
+
+        function finishCopy(text, school, isShort) {
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            const msg = isShort ? '단축 보안 링크가 복사되었습니다!' : '보안 링크가 복사되었습니다!';
+            showToast(`[${school}] ${msg}`);
+            setTimeout(() => toggleSidebar(), 1200);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.style.opacity = '1';
+            toast.style.bottom = '40px';
+            setTimeout(() => { 
+                toast.style.opacity = '0';
+                toast.style.bottom = '20px';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
