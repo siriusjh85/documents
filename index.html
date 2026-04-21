@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>출발전 제출서류 [남평초등학교]</title>
+    <title>출발전 제출서류 [남선초등학교]</title>
     
     <!-- 카카오톡/문자 링크 공유 시 표시될 썸네일 (Open Graph) -->
     <meta property="og:title" content="출발전 제출 서류 포털">
@@ -74,7 +74,7 @@
         <div class="p-5 flex-grow overflow-y-auto">
             <div class="mb-4">
                 <label class="block text-sm font-bold text-slate-700 mb-2">1. 발주처(학교/기관명) 설정</label>
-                <input type="text" id="admin-school-name" placeholder="예: 남평초등학교" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 text-sm" oninput="updatePreviewText()">
+                <input type="text" id="admin-school-name" placeholder="예: 남선초등학교" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 text-sm" oninput="updatePreviewText()">
                 <p class="text-[11px] text-blue-600 mt-1 font-bold">※ 입력하신 이름으로 PDF 폴더 경로가 매칭됩니다.</p>
             </div>
 
@@ -147,7 +147,7 @@
                 </nav>
                 <div class="flex flex-wrap items-center gap-3 mt-1">
                     <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                        [<span class="school-name-display text-blue-700">남평초등학교</span>] <span class="program-name-display text-slate-800">국외현장체험학습</span>
+                        [<span class="school-name-display text-blue-700">남선초등학교</span>] <span class="program-name-display text-slate-800">국외현장체험학습</span>
                     </h1>
                     <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold no-print border border-emerald-200 shadow-sm">
                         서류제출 완료
@@ -318,7 +318,7 @@
     </div>
 
     <script>
-        let currentSchool = '남평초등학교';
+        let currentSchool = '남선초등학교';
         let currentProgram = '국외현장체험학습';
         let encodedPassword = null;
 
@@ -356,7 +356,7 @@
 
         // UI 및 브라우저 타이틀 동적 업데이트
         function updatePreviewText() {
-            const inputSchool = document.getElementById('admin-school-name').value || '남평초등학교';
+            const inputSchool = document.getElementById('admin-school-name').value || '남선초등학교';
             const inputProgram = document.getElementById('admin-program-name').value || '국외현장체험학습';
             
             // 브라우저 탭 타이틀 변경 (요청하신 형식으로 변경)
@@ -405,7 +405,7 @@
         }
 
         function generateLink() {
-            const school = document.getElementById('admin-school-name').value || '남평초등학교';
+            const school = document.getElementById('admin-school-name').value || '남선초등학교';
             const program = document.getElementById('admin-program-name').value || '국외현장체험학습';
             const pwd = document.getElementById('admin-password').value;
             const btn = document.getElementById('generateBtn');
